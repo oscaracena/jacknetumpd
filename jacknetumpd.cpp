@@ -43,6 +43,9 @@
 
  V1.0 : 06/12/2024
   - first public release after Network Protocol being adopted by MMA
+ 
+  V1.1 : 27/12/2024
+  - TXT record in mDNS updated to "UMPEndpointName" rather than "EndpointName"
  */
 
 #include <stdio.h>
@@ -264,7 +267,7 @@ int main(int argc, char** argv)
     int Ret;
     jack_client_t *client;
 
-    printf ("JACK <-> Network UMP bridge V1.0 for Zynthian\n");
+    printf ("JACK <-> Network UMP bridge V1.1 for Zynthian\n");
     printf ("Copyright 2024 Benoit BOUCHEZ (BEB)\n");
     printf ("Please report any issue to BEB on discourse.zynthian.org\n");
 
@@ -276,10 +279,12 @@ int main(int argc, char** argv)
 
     initUMP_mDNS();
 
+    /*
     if (argc>=2)
     {
-        //if (strcmp(argv[1], "-verbose")==0) VerboseRTP=true;
+        if (strcmp(argv[1], "-verbose")==0) VerboseRTP=true;
     }
+    */
 
     if ((client = jack_client_open ("jacknetumpd", JackNullOption, NULL)) == 0)
     {

@@ -49,7 +49,7 @@ static unsigned char hex2asc (unsigned char hex)
 void initUMP_mDNS(void)
 {
     unsigned char* mDNSPacket;
-    char ProductName[64] = "EndpointName=";
+    char ProductName[64] = "UMPEndpointName=";
     char* ProductInstanceIDPtr;
     struct ifreq ifr{};
     uint8_t mac_address [6];
