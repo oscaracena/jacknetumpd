@@ -46,6 +46,10 @@
  
   V1.1 : 27/12/2024
   - TXT record in mDNS updated to "UMPEndpointName" rather than "EndpointName"
+ 
+  V1.2 : 29/12/2024
+  - mDNS TTL set to 2 minutes (8 hours can be problematic for refreshing mDNS table on some devices)
+  * TODO : there are other TTL fields to change
  */
 
 #include <stdio.h>
@@ -267,7 +271,7 @@ int main(int argc, char** argv)
     int Ret;
     jack_client_t *client;
 
-    printf ("JACK <-> Network UMP bridge V1.1 for Zynthian\n");
+    printf ("JACK <-> Network UMP bridge V1.2 for Zynthian\n");
     printf ("Copyright 2024 Benoit BOUCHEZ (BEB)\n");
     printf ("Please report any issue to BEB on discourse.zynthian.org\n");
 

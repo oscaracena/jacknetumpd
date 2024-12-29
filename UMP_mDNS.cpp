@@ -116,8 +116,8 @@ void initUMP_mDNS(void)
     mDNSPacket [BufferPos++] = 0x01;        // 0x0001 = Class IN
     mDNSPacket [BufferPos++] = 0x00;
     mDNSPacket [BufferPos++] = 0x00;
-    mDNSPacket [BufferPos++] = 0x70;
-    mDNSPacket [BufferPos++] = 0x80;        // TTL = 0x00007080 (8 hours)
+    mDNSPacket [BufferPos++] = 0x00;
+    mDNSPacket [BufferPos++] = 0x78;        // TTL = 120 seconds
     mDNSPacket [BufferPos++] = 0x00;        // Length MSB
     mDNSPacket [BufferPos++] = PRODUCT_INSTANCE_ID_LEN+MIDI2ProtocolNameLen+UDPProtocolNameLen+LocalDomainNameLen+4+1;   // Add length byte + NULL terminator
 
@@ -194,8 +194,8 @@ void initUMP_mDNS(void)
     mDNSPacket [BufferPos++] = 0x01;        // 0x0001 = Class IN
     mDNSPacket [BufferPos++] = 0x00;
     mDNSPacket [BufferPos++] = 0x00;
-    mDNSPacket [BufferPos++] = 0x11;
-    mDNSPacket [BufferPos++] = 0x94;        // TTL = 4500 seconds
+    mDNSPacket [BufferPos++] = 0x00;
+    mDNSPacket [BufferPos++] = 0x78;        // TTL = 120 seconds
     mDNSPacket [BufferPos++] = 0x00;        // Length MSB
 	
 	/*
