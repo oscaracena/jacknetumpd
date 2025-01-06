@@ -1,5 +1,5 @@
 [Unit]
-Description=RTP-MIDI Service
+Description=NetUMP Service
 After=networking.service
 After=jack2.service
 Requires=jack2.service
