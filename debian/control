@@ -1,0 +1,21 @@
+Source: jacknetumpd
+Section: utils
+Priority: optional
+Maintainer: Oscar Aceña Herrera <oscaracena@gmail.com>
+Build-Depends:
+ debhelper (>= 7.0.50~),
+ debhelper-compat (= 12),
+ quilt,
+ libjack-jackd2-dev
+Standards-Version: 4.6.0.1
+
+Package: jacknetumpd
+Architecture: any
+Depends:
+ ${misc:Depends},
+ pipewire-jack | libjack-jackd2-0,
+ ${shlibs:Depends},
+Description: RTP-MIDI bridge to Jack
+ This daemon is used by the Zynthian to create an RTP-MIDI endpoint, which
+ can be activated via the Zynthian's Admin menu. It forwards events between
+ RTP and Jack.

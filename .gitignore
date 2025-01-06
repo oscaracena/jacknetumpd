@@ -1,0 +1,6 @@
+*.o
+jacknetumpd
+ebian/debhelper-build-stamp
+debian/files
+debian/jacknetumpd.debhelper.log
+debian/jacknetumpd.substvars
