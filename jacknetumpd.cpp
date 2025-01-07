@@ -1,10 +1,10 @@
 /*
  * File:   jacknetumpd.cpp
  * NetUMP daemon with JACK interface
- * Created initially for the Zynthian Open Source Synthesizer
+ * Created mainly for the Zynthian Open Source Synthesizer
  *
  *
- * Copyright (c) 2023 Benoit BOUCHEZ / KissBox
+ * Copyright (c) 2025 Benoit BOUCHEZ / KissBox
  * License : MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -49,7 +49,11 @@
  
   V1.2 : 29/12/2024
   - mDNS TTL set to 2 minutes (8 hours can be problematic for refreshing mDNS table on some devices)
-  * TODO : there are other TTL fields to change
+  
+  V1.3 : 07/01/2025
+  - bug corrected in SYSEX handling from JACK to UMP : SYSEX longer than 6 bytes could hang the daemon (see comment in ump_transcoder.c)
+  - bug corrected in NetUMPCallback() : last word for 128-bit UMP message was not transmitted (wrong index in array)
+  
  */
 
 #include <stdio.h>
@@ -129,7 +133,7 @@ void NetUMPCallback (void* UserInstance, uint32_t* DataBlock)
 
             if (MTSize==4)
             {
-                UMP2JACK.FIFO[TempInPtr]=DataBlock[2];
+                UMP2JACK.FIFO[TempInPtr]=DataBlock[3];
                 TempInPtr+=1;
                 if (TempInPtr>=UMP_FIFO_SIZE)
                     TempInPtr=0;
@@ -271,8 +275,8 @@ int main(int argc, char** argv)
     int Ret;
     jack_client_t *client;
 
-    printf ("JACK <-> Network UMP bridge V1.2 for Zynthian\n");
-    printf ("Copyright 2024 Benoit BOUCHEZ (BEB)\n");
+    printf ("JACK <-> Network UMP bridge V1.3 for Zynthian\n");
+    printf ("Copyright 2024/2025 Benoit BOUCHEZ (BEB)\n");
     printf ("Please report any issue to BEB on discourse.zynthian.org\n");
 
     break_request=false;
