@@ -3,4 +3,4 @@
 	url = https://github.com/bbouchez/BEBSDK
 [submodule "libs/NetUMP"]
 	path = libs/NetUMP
-	url = https://github.com/bbouchez/NetUMP
+	url = https://github.com/oscaracena/NetUMP

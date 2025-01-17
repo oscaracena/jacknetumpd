@@ -43,17 +43,17 @@
 
  V1.0 : 06/12/2024
   - first public release after Network Protocol being adopted by MMA
- 
+
   V1.1 : 27/12/2024
   - TXT record in mDNS updated to "UMPEndpointName" rather than "EndpointName"
- 
+
   V1.2 : 29/12/2024
   - mDNS TTL set to 2 minutes (8 hours can be problematic for refreshing mDNS table on some devices)
-  
+
   V1.3 : 07/01/2025
   - bug corrected in SYSEX handling from JACK to UMP : SYSEX longer than 6 bytes could hang the daemon (see comment in ump_transcoder.c)
   - bug corrected in NetUMPCallback() : last word for 128-bit UMP message was not transmitted (wrong index in array)
-  
+
  */
 
 #include <stdio.h>
@@ -67,6 +67,7 @@
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#include <jack/metadata.h>
 
 #include "SystemSleep.h"
 #include "NetUMP.h"
@@ -75,7 +76,7 @@
 #include "UMP_mDNS.h"
 
 jack_port_t *input_port;
-jack_port_t *output_port;
+static jack_port_t *output_port;
 bool break_request=false;
 unsigned int IntermDNSPacketCounter;
 
@@ -273,7 +274,7 @@ void sig_handler (int signo)
 int main(int argc, char** argv)
 {
     int Ret;
-    jack_client_t *client;
+    static jack_client_t *client;
 
     printf ("JACK <-> Network UMP bridge V1.3 for Zynthian\n");
     printf ("Copyright 2024/2025 Benoit BOUCHEZ (BEB)\n");
@@ -305,6 +306,19 @@ int main(int argc, char** argv)
     {
         NetUMPHandler->SetEndpointName((char*)"Zynthian NetUMP");
         NetUMPHandler->SetProductInstanceID((char*)"ZV5_001");      // TODO : this should be random
+
+        NetUMPHandler->SetConnectionCallback([](const char* EndpointName, unsigned int size) {
+            printf ("jacknetumpd : connected to '%s'.\n", EndpointName);
+            jack_uuid_t output_port_uuid = jack_port_uuid(output_port);
+            jack_set_property(client, output_port_uuid, "UMPEndpointName", EndpointName, "text/plain");
+        });
+
+        NetUMPHandler->SetDisconnectCallback([]() {
+            printf ("jacknetumpd : disconnected\n");
+            jack_uuid_t output_port_uuid = jack_port_uuid(output_port);
+            jack_remove_property(client, output_port_uuid, "UMPEndpointName");
+        });
+
         Ret=NetUMPHandler->InitiateSession (0, 0, 5504, false);
         if (Ret<0)
         {
