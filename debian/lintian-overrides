@@ -1,2 +1,3 @@
-jacknetumpd: no-manual-page usr/bin/jacknetumpd
-jacknetumpd: initial-upload-closes-no-bugs
+no-manual-page usr/bin/jacknetumpd
+systemd-service-file-missing-documentation-key
+package-supports-alternative-init-but-no-init.d-script
