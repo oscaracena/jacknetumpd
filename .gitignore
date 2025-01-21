@@ -6,3 +6,4 @@ debian/jacknetumpd.debhelper.log
 debian/jacknetumpd.postrm.debhelper
 debian/jacknetumpd.substvars
 debian/debhelper-build-stamp
+.vscode

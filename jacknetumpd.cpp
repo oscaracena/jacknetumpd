@@ -28,13 +28,6 @@
  */
 
 /*
- Command line options
- --host : hostname or IP address of the remote peer
- --port : port number of the remote peer, or local port number if --host is not specified
- --help : display command line options
-*/
-
-/*
  Release notes
  V0.2 : 23/12/2023
  - update to use MIT license BEBSDK
@@ -58,7 +51,7 @@
 
  V1.3.2 : 21/01/2025 (changes by oscaracena)
  - added callbacks for connection and disconnection events
- - added host/port options to initiate a session with a remote peer
+ - added host/port/endpoint-name options to initiate a session with a remote peer
 */
 
 #include <stdio.h>
@@ -283,6 +276,7 @@ int main(int argc, char** argv)
     int Ret;
     static jack_client_t *client;
     char *destHost = 0;
+    char *localEndpointName = "Zynthian NetUMP";
     unsigned int port = 5504;
 
     printf ("JACK <-> Network UMP bridge V1.3.2 for Zynthian\n");
@@ -308,13 +302,19 @@ int main(int argc, char** argv)
             port = atoi(argv[i + 1]);
             i++;
         }
+        else if (strcmp(argv[i], "--endpoint-name") == 0 && i + 1 < argc)
+        {
+            localEndpointName = argv[i + 1];
+            i++;
+        }
         else if (strcmp(argv[i], "--help") == 0)
         {
             printf("Usage: %s [options]\n", argv[0]);
             printf("Options:\n");
-            printf("  --host <hostname>   Specify the destination host\n");
-            printf("  --port <port>       Specify the destination port\n");
-            printf("  --help              Display this help message\n");
+            printf("  --host <hostname>        Set remote destination host\n");
+            printf("  --port <port>            Set loca or remote destination port\n");
+            printf("  --endpoint-name <name>   Set local UMP Endpoint Name\n");
+            printf("  --help                   Display this help message\n");
             return 0;
         }
         else
@@ -336,7 +336,7 @@ int main(int argc, char** argv)
     NetUMPHandler = new CNetUMPHandler (&NetUMPCallback, 0);
     if (NetUMPHandler)
     {
-        NetUMPHandler->SetEndpointName((char*)"Zynthian NetUMP");
+        NetUMPHandler->SetEndpointName(localEndpointName);
         NetUMPHandler->SetProductInstanceID((char*)"ZV5_001");      // TODO : this should be random
 
         NetUMPHandler->SetConnectionCallback([](const char* EndpointName, unsigned int size) {
@@ -365,7 +365,7 @@ int main(int argc, char** argv)
 
             char *ip = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
             printf("jacknetumpd : resolved hostname '%s' to IP address %s\n", destHost, ip);
-            unsigned int destIP = inet_addr(ip);
+            unsigned int destIP = ntohl(inet_addr(ip));
             Ret = NetUMPHandler->InitiateSession(destIP, port, 5504, true);
         }
         else {
