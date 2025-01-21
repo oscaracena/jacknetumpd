@@ -29,32 +29,37 @@
 
 /*
  Command line options
- -verbose : displays session messages on console for debugging purposes
- */
+ --host : hostname or IP address of the remote peer
+ --port : port number of the remote peer, or local port number if --host is not specified
+ --help : display command line options
+*/
 
- /*
+/*
  Release notes
  V0.2 : 23/12/2023
  - update to use MIT license BEBSDK
  - updated NetUMP library for V0.7.6 specification
 
  V0.3 : 05/01/2024
-  - added mDNS preliminary support for NAMM demonstration
+ - added mDNS preliminary support for NAMM demonstration
 
  V1.0 : 06/12/2024
-  - first public release after Network Protocol being adopted by MMA
+ - first public release after Network Protocol being adopted by MMA
 
-  V1.1 : 27/12/2024
-  - TXT record in mDNS updated to "UMPEndpointName" rather than "EndpointName"
+ V1.1 : 27/12/2024
+ - TXT record in mDNS updated to "UMPEndpointName" rather than "EndpointName"
 
-  V1.2 : 29/12/2024
-  - mDNS TTL set to 2 minutes (8 hours can be problematic for refreshing mDNS table on some devices)
+ V1.2 : 29/12/2024
+ - mDNS TTL set to 2 minutes (8 hours can be problematic for refreshing mDNS table on some devices)
 
-  V1.3 : 07/01/2025
-  - bug corrected in SYSEX handling from JACK to UMP : SYSEX longer than 6 bytes could hang the daemon (see comment in ump_transcoder.c)
-  - bug corrected in NetUMPCallback() : last word for 128-bit UMP message was not transmitted (wrong index in array)
+ V1.3 : 07/01/2025
+ - bug corrected in SYSEX handling from JACK to UMP : SYSEX longer than 6 bytes could hang the daemon (see comment in ump_transcoder.c)
+ - bug corrected in NetUMPCallback() : last word for 128-bit UMP message was not transmitted (wrong index in array)
 
- */
+ V1.3.2 : 21/01/2025 (changes by oscaracena)
+ - added callbacks for connection and disconnection events
+ - added host/port options to initiate a session with a remote peer
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,6 +69,8 @@
 #include <string.h>
 #include <math.h>
 #include <signal.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -275,8 +282,10 @@ int main(int argc, char** argv)
 {
     int Ret;
     static jack_client_t *client;
+    char *destHost = 0;
+    unsigned int port = 5504;
 
-    printf ("JACK <-> Network UMP bridge V1.3 for Zynthian\n");
+    printf ("JACK <-> Network UMP bridge V1.3.2 for Zynthian\n");
     printf ("Copyright 2024/2025 Benoit BOUCHEZ (BEB)\n");
     printf ("Please report any issue to BEB on discourse.zynthian.org\n");
 
@@ -286,14 +295,37 @@ int main(int argc, char** argv)
     UMP2JACK.ReadPtr=0;
     UMP2JACK.WritePtr=0;
 
-    initUMP_mDNS();
-
-    /*
-    if (argc>=2)
+    // Parse command line arguments
+    for (int i = 1; i < argc; i++)
     {
-        if (strcmp(argv[1], "-verbose")==0) VerboseRTP=true;
+        if (strcmp(argv[i], "--host") == 0 && i + 1 < argc)
+        {
+            destHost = argv[i + 1];
+            i++;
+        }
+        else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc)
+        {
+            port = atoi(argv[i + 1]);
+            i++;
+        }
+        else if (strcmp(argv[i], "--help") == 0)
+        {
+            printf("Usage: %s [options]\n", argv[0]);
+            printf("Options:\n");
+            printf("  --host <hostname>   Specify the destination host\n");
+            printf("  --port <port>       Specify the destination port\n");
+            printf("  --help              Display this help message\n");
+            return 0;
+        }
+        else
+        {
+            fprintf(stderr, "Unknown option: %s.\n", argv[i]);
+            fprintf(stderr, "Use --help for usage information.\n");
+            return 1;
+        }
     }
-    */
+
+    initUMP_mDNS();
 
     if ((client = jack_client_open ("jacknetumpd", JackNullOption, NULL)) == 0)
     {
@@ -319,7 +351,28 @@ int main(int argc, char** argv)
             jack_remove_property(client, output_port_uuid, "UMPEndpointName");
         });
 
-        Ret=NetUMPHandler->InitiateSession (0, 0, 5504, false);
+        if (destHost)
+        {
+            printf("jacknetumpd : connecting to peer '%s:%d'...\n", destHost, port);
+            struct hostent *host_entry;
+            host_entry = gethostbyname(destHost);
+            if (host_entry == NULL)
+            {
+                fprintf(stderr, "jacknetumpd : could not resolve hostname: %s\n", destHost);
+                delete NetUMPHandler;
+                return 1;
+            }
+
+            char *ip = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
+            printf("jacknetumpd : resolved hostname '%s' to IP address %s\n", destHost, ip);
+            unsigned int destIP = inet_addr(ip);
+            Ret = NetUMPHandler->InitiateSession(destIP, port, 5504, true);
+        }
+        else {
+            printf("jacknetumpd : waiting for connection on port %d...\n", port);
+            Ret = NetUMPHandler->InitiateSession (0, 0, port, false);
+        }
+
         if (Ret<0)
         {
             fprintf (stderr, "jacknetumpd : can not create session\n");
