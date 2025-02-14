@@ -197,44 +197,16 @@ void initUMP_mDNS(void)
     mDNSPacket [BufferPos++] = 0x00;
     mDNSPacket [BufferPos++] = 0x78;        // TTL = 120 seconds
     mDNSPacket [BufferPos++] = 0x00;        // Length MSB
-	
-	/*
-    mDNSPacket [BufferPos++] = ProductNameLen+1;        // Data length
-    mDNSPacket [BufferPos++] = ProductNameLen;
-    memcpy (&mDNSPacket[BufferPos], &ProductName[0], ProductNameLen);
-    BufferPos+=ProductNameLen;
-	*/
-	
+
 	mDNSPacket [BufferPos++] = ProductNameLen+1+PRODUCT_INSTANCE_ID_LEN+1+PRODUCT_INSTANCEID_TAG_LEN;        // Data length (18 = size of "ProductInstanceID=" string)
     mDNSPacket [BufferPos++] = ProductNameLen;      // First string
     memcpy (&mDNSPacket[BufferPos], &ProductName[0], ProductNameLen);
     BufferPos+=ProductNameLen;
 
     mDNSPacket [BufferPos++] = PRODUCT_INSTANCE_ID_LEN+PRODUCT_INSTANCEID_TAG_LEN;      // Second string
-	/*
-    mDNSPacket [BufferPos++] = PRODUCT_INSTANCE_ID_LEN+18;      // Second string
-    mDNSPacket [BufferPos++] = 'P';
-    mDNSPacket [BufferPos++] = 'r';
-    mDNSPacket [BufferPos++] = 'o';
-    mDNSPacket [BufferPos++] = 'd';
-    mDNSPacket [BufferPos++] = 'u';
-    mDNSPacket [BufferPos++] = 'c';
-    mDNSPacket [BufferPos++] = 't';
-    mDNSPacket [BufferPos++] = 'I';
-    mDNSPacket [BufferPos++] = 'n';
-    mDNSPacket [BufferPos++] = 's';
-    mDNSPacket [BufferPos++] = 't';
-    mDNSPacket [BufferPos++] = 'a';
-    mDNSPacket [BufferPos++] = 'n';
-    mDNSPacket [BufferPos++] = 'c';
-    mDNSPacket [BufferPos++] = 'e';
-    mDNSPacket [BufferPos++] = 'I';
-    mDNSPacket [BufferPos++] = 'd';
-    mDNSPacket [BufferPos++] = '=';
-	*/
-	
+
     memcpy (&mDNSPacket[BufferPos], &ProductInstanceIdTagStr, PRODUCT_INSTANCEID_TAG_LEN);
-    BufferPos+=PRODUCT_INSTANCEID_TAG_LEN;	
+    BufferPos+=PRODUCT_INSTANCEID_TAG_LEN;
     memcpy (&mDNSPacket[BufferPos], ProductInstanceIDPtr, PRODUCT_INSTANCE_ID_LEN);
     BufferPos+=PRODUCT_INSTANCE_ID_LEN;
 
